@@ -7,10 +7,45 @@ void main() {
   runApp(Mode1(newsService: newsService));
 }
 
-class Mode1 extends StatelessWidget {
+class Mode1 extends StatefulWidget {
   final FlutterNewsService newsService;
 
   Mode1({required this.newsService});
+
+  @override
+  _Mode1State createState() => _Mode1State();
+}
+
+class _Mode1State extends State<Mode1> {
+  @override
+  void initState() {
+    super.initState();
+    fetchAndDisplayTopHeadlines();
+  }
+
+  Future<void> fetchAndDisplayTopHeadlines() async {
+    var topHeadlines =
+        await widget.newsService.fetchTopHeadlines(country: 'vn');
+    if (topHeadlines != null) {
+      // Hiển thị danh sách tiêu đề tin tức trong một SnackBar hoặc một widget khác
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Top Headlines - Vietnam: ${topHeadlines.articles.map((a) => a.title).toList()}',
+          ),
+        ),
+      );
+    } else {
+      // Xử lý khi không có dữ liệu
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not fetch headlines for Vietnam!',
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,66 +53,12 @@ class Mode1 extends StatelessWidget {
       title: 'News App',
       home: Scaffold(
         appBar: AppBar(
-          title: Text('News App'),
+          title: Text('Top Headlines - Vietnam'),
         ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ElevatedButton(
-                onPressed: () {
-                  fetchAndDisplayTopHeadlines(context);
-                },
-                child: Text('Get Top Headlines'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  searchAndDisplayNews(context);
-                },
-                child: Text('Search News'),
-              ),
-            ],
-          ),
+          child: Text('Fetching top headlines...'),
         ),
       ),
     );
-  }
-
-  Future<void> fetchAndDisplayTopHeadlines(BuildContext context) async {
-    var topHeadlines = await newsService.fetchTopHeadlines(country: 'us');
-    // ignore: unnecessary_null_comparison
-    if (topHeadlines != null) {
-      // Hiển thị thông tin tin tức hoặc xử lý dữ liệu ở đây (ví dụ: hiển thị trên giao diện người dùng)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Top Headlines: ${topHeadlines.articles.map((a) => a.title).toList()}',
-          ),
-        ),
-      );
-    } else {
-      // Xử lý khi không có dữ liệu
-    }
-  }
-
-  Future<void> searchAndDisplayNews(BuildContext context) async {
-    var searchResult = await newsService.fetchEverything(
-      q: 'bitcoin',
-      from: '2023-05-15',
-      sortBy: 'publishedAt',
-    );
-    // ignore: unnecessary_null_comparison
-    if (searchResult != null) {
-      // Hiển thị thông tin tin tức hoặc xử lý dữ liệu ở đây (ví dụ: hiển thị trên giao diện người dùng)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Search Result: ${searchResult.articles.map((a) => a.title).toList()}',
-          ),
-        ),
-      );
-    } else {
-      // Xử lý khi không có dữ liệu
-    }
   }
 }
